@@ -17,6 +17,7 @@ from tgbot.handlers.admin import handlers as admin_handlers
 from tgbot.handlers.location import handlers as location_handlers
 from tgbot.handlers.onboarding import handlers as onboarding_handlers
 from tgbot.handlers.broadcast_message import handlers as broadcast_handlers
+from tgbot.handlers.fundgrube import handlers as fundgrube_handlers
 from tgbot.main import bot
 
 
@@ -51,6 +52,9 @@ def setup_dispatcher(dp):
     dp.add_handler(MessageHandler(
         Filters.animation, files.show_file_id,
     ))
+
+    # fundgrube search
+    dp.add_handler(CommandHandler("search", fundgrube_handlers.command_search))
 
     # handling errors
     dp.add_error_handler(error.send_stacktrace_to_tg_chat)

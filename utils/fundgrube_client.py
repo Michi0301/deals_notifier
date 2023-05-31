@@ -15,14 +15,14 @@ categorieIds=CAT_DE_MM_202
 
 # Supported providers: 'MM', 'SAT'
 class Provider:
-    def __init__(self, provider) -> None:
-        self.provider = provider
+    def __init__(self, identifier) -> None:
+        self.identifier = identifier
 
     def api_url(self):
-        return PROVIDERS[self.provider] + API_PATH
+        return PROVIDERS[self.identifier] + API_PATH
     
     def web_url(self):
-        return PROVIDERS[self.provider] + WEB_PATH
+        return PROVIDERS[self.identifier] + WEB_PATH
 
 from urllib.parse import urlencode
 class Query:

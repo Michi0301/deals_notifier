@@ -18,7 +18,7 @@ from tgbot.handlers.location import handlers as location_handlers
 from tgbot.handlers.onboarding import handlers as onboarding_handlers
 from tgbot.handlers.broadcast_message import handlers as broadcast_handlers
 from tgbot.handlers.fundgrube import handlers as fundgrube_handlers
-from tgbot.handlers.fundgrube.manage_data import PRODUCT_SELECT_SEARCH_BUTTON
+from tgbot.handlers.fundgrube.manage_data import PRODUCT_SEARCH, PRODUCT_SEARCH_REQUEST
 
 from tgbot.main import bot
 
@@ -58,8 +58,8 @@ def setup_dispatcher(dp):
     # fundgrube search
     dp.add_handler(CommandHandler("s", fundgrube_handlers.command_search))
     dp.add_handler(CommandHandler("p", fundgrube_handlers.command_product_select))
-    dp.add_handler(CallbackQueryHandler(fundgrube_handlers.command_search_offers_for_product_id, pattern=f"^{PRODUCT_SELECT_SEARCH_BUTTON}:.*"))
-
+    dp.add_handler(CallbackQueryHandler(fundgrube_handlers.command_search_offers_for_product_id, pattern=f"^{PRODUCT_SEARCH}:.*"))
+    dp.add_handler(CallbackQueryHandler(fundgrube_handlers.command_register_search, pattern=f"^{PRODUCT_SEARCH_REQUEST}:.*"))
 
     # handling errors
     dp.add_error_handler(error.send_stacktrace_to_tg_chat)

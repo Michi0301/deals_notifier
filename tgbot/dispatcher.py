@@ -56,8 +56,7 @@ def setup_dispatcher(dp):
     ))
 
     # fundgrube search
-    dp.add_handler(CommandHandler("s", deal_search_handlers.command_search))
-    dp.add_handler(CommandHandler("p", deal_search_handlers.command_product_select))
+    dp.add_handler(CommandHandler("s", deal_search_handlers.command_product_select))
     dp.add_handler(CallbackQueryHandler(deal_search_handlers.command_search_offers_for_product_id, pattern=f"^{PRODUCT_SEARCH}:.*"))
     dp.add_handler(CallbackQueryHandler(deal_search_handlers.command_register_search, pattern=f"^{PRODUCT_SEARCH_REQUEST}:.*"))
 

@@ -11,23 +11,6 @@ import re
 
 from deal_search.models import SearchRequest
 
-
-def command_search(update: Update, context: CallbackContext) -> None:
-    
-    mm = client.Provider('MM')
-    query = client.Query({"text": " ".join(context.args)})
-    search = client.Search(mm, query)
-
-    cheapest_products = search.cheapest(3)
-
-    if len(cheapest_products) > 0:
-        for product in cheapest_products:
-            text = static_text.result.format(name=product.name, price=product.price, url=product.fundgrube_url())
-            update.message.reply_text(text=text, parse_mode="HTML")
-    else:
-        text = static_text.none_found
-        update.message.reply_text(text=text)
-
 def command_product_select(update: Update, context: CallbackContext) -> None:
     mm = client.Provider('MM')
     query = client.Query({"text": " ".join(context.args)})

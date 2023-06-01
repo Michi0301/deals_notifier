@@ -16,14 +16,6 @@ DEALS_API_PATH = "/de/data/fundgrube/api/postings"
 DEALS_WEB_PATH = "/de/data/fundgrube"
 GRAPHQL_PATH = "/api/v1/graphql"
 
-
-""""
-Filtering via url params:
-ouletIds=1,2,3
-brands=SONY
-categorieIds=CAT_DE_MM_202
-"""
-
 # Supported providers: 'MM', 'SAT'
 class Provider:
     def __init__(self, identifier) -> None:
@@ -104,6 +96,13 @@ class BranchSearch:
 
         else:
             return []
+
+""""
+Options for query_opts_dict:
+ouletIds=1,2,3
+brands=SONY
+categorieIds=CAT_DE_MM_202
+"""
 
 class DealsQuery:
     def __init__(self, query_opts_dict):

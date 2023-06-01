@@ -63,7 +63,11 @@ def command_register_search(update: Update, context: CallbackContext) -> None:
     provider, pim_id, price = re.findall(exp, callback_data)[0]
 
     u = User.get_user(update, context)
-    SearchRequest.objects.create(user=u, provider=provider, product_id=pim_id, price=price)
+    
+    provider_instance = client.Provider(provider) 
+    name = client.Search.fetch_product_name(provider_instance, pim_id)
+
+    SearchRequest.objects.create(user=u, name=name, provider=provider, product_id=pim_id, price=price)
 
     text = static_text.notification_created
     update.effective_message.reply_text(text=text)
@@ -72,6 +76,8 @@ def command_list_search_requests(update: Update, context: CallbackContext):
     u = User.get_user(update, context)
     search_requests = SearchRequest.objects.filter(user=u)
     if search_requests.exists():
-        update.effective_message.reply_text(text=f"Found {search_requests.count()} entries.")
+        for search_request in search_requests:
+            text = static_text.search_request.format(name=search_request.name, price=search_request.price)
+            update.effective_message.reply_text(text=text, parse_mode="HTML")
     else:
         update.effective_message.reply_text(text="You don't have any notifications setup.")

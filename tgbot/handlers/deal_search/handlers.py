@@ -64,3 +64,6 @@ def command_register_search(update: Update, context: CallbackContext) -> None:
 
     u = User.get_user(update, context)
     SearchRequest.objects.create(user=u, provider=provider, product_id=pim_id, price=price)
+
+    text = static_text.notification_created
+    update.effective_message.reply_text(text=text)

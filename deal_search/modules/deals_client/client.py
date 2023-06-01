@@ -1,6 +1,15 @@
+from dataclasses import dataclass
+from functools import cache
+from requests.adapters import HTTPAdapter, Retry
+from urllib.parse import urlencode
+import json
+import logging
+import requests
+import uuid
+
 PROVIDERS = {
     "MM": "https://www.mediamarkt.de",
-    "SAT": "https://saturn.de"
+    "SAT": "https://www.saturn.de"
 }
 
 DEALS_API_PATH = "/de/data/fundgrube/api/postings"
@@ -27,9 +36,75 @@ class Provider:
         return PROVIDERS[self.identifier] + DEALS_WEB_PATH
     
     def gql_api_url(self):
-        pass
+        return PROVIDERS[self.identifier] + GRAPHQL_PATH    
 
-from urllib.parse import urlencode
+"""
+Returns a list with 10 branches in the follwing format:
+{
+    'id': '623',
+    'displayName': 'Saturn Senden',
+    'displayNameShort': 'Senden',
+    'phoneNumber': '123213213'
+    'address': {
+        'name': 'Saturn Electro-Handelsgesellschaft mbH Senden',
+        'street': 'Berliner Straße',
+        'houseNumber': '13',
+        'city': 'Senden',
+        'zipCode': '89250',
+        'state': None,
+        'countryCode': 'DE', 
+        '__typename': 'GraphqlStoreAddress',
+    }
+}
+""" 
+class BranchSearch:
+    def __init__(self, provider, zip_or_city):
+        self.provider = provider
+        self.zip_or_city = zip_or_city
+        self.variables = {"limit": 10, "pos": {"lat": 0,"lng": 0}, "zipCodeOrCity": self.zip_or_city}
+
+        if provider.identifier == 'MM':
+            sales_line = "Media"
+        else:
+            sales_line = "Saturn"   
+
+        self.extensions = {"persistedQuery": {
+            "version": 1,"sha256Hash": "32e9f9493e3a218eb17a48fc6c68fea0bec636ae3b5e188dee94ef9879cf405d" },
+            "pwa": { "salesLine": sales_line, "country": "DE", "language": "de", "globalLoyaltyProgram": True, "fifaUserCreation": True } }
+    
+    def build_url(self):
+        return self.provider.gql_api_url() + f"?variables={json.dumps(self.variables)}&extensions={json.dumps(self.extensions)}"
+
+    def fetch_branches(self):
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/113.0",
+            "Content-Type": "application/json",
+            "apollographql-client-name": "pwa-client",
+            "apollographql-client-version": "8.5.0",
+            "x-flow-id": str(uuid.uuid4())
+        }
+
+        session = requests.Session()
+        session.headers = headers
+        session.mount('https://', HTTPAdapter(max_retries=Retry(total=0)))
+
+        logging.info(f"Requesting: {self.build_url()}")
+
+        response = session.get(self.build_url(), headers=headers)
+
+        if response.status_code == 200:
+            closest_stores =  response.json()["data"]["closestStores"]
+            
+            stores = []
+            keys_to_extract = ["id", "displayName", "displayNameShort", "address", "phoneNumber"]
+            for store in closest_stores:
+                stores.append(dict(filter(lambda item: item[0] in keys_to_extract, store.items())))
+
+            return stores
+
+        else:
+            return []
+
 class DealsQuery:
     def __init__(self, query_opts_dict):
         defaults = {
@@ -48,8 +123,6 @@ class ResultDict:
     def cheapest(self, number=1):
         self.postings.sort(key=lambda x: float(x.get('price')))
         return self.postings[:number]
-    
-from dataclasses import dataclass
 
 @dataclass
 class Posting:
@@ -91,12 +164,7 @@ class Posting:
     
     def fundgrube_url(self):
         return self.provider.web_url() + "?" + f"text={self.pim_id}" + f"&outletIds={self.outlet_id}"
-        
 
-
-import requests
-from requests.adapters import HTTPAdapter, Retry
-from functools import cache
 class DealSearch:
     BLANK_RESULT = {
                "categories": [],
@@ -120,7 +188,7 @@ class DealSearch:
         session.headers = headers
         session.mount('https://', HTTPAdapter(max_retries=Retry(total=3)))
 
-        print(f"Requesting: {self.build_url()}")
+        logging.info(f"Requesting: {self.build_url()}")
 
         response = session.get(self.build_url(), headers=headers)
 

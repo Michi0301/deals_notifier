@@ -77,6 +77,19 @@ class TestClient(unittest.TestCase):
     search = client.DealSearch(mm, query)
     self.assertEqual(len(search.postings()), 0)
 
+  @responses.activate
+  def test_branch_search(self):
+    branches_fixture = json.loads(open("fixtures/response_200_branch_search.json", "r").read())
+    responses.add(
+     responses.GET,
+     "https://www.mediamarkt.de/api/v1/graphql?variables=%7B%22limit%22:%2010,%20%22pos%22:%20%7B%22lat%22:%200,%20%22lng%22:%200%7D,%20%22zipCodeOrCity%22:%20%2285298%22%7D&extensions=%7B%22persistedQuery%22:%20%7B%22version%22:%201,%20%22sha256Hash%22:%20%2232e9f9493e3a218eb17a48fc6c68fea0bec636ae3b5e188dee94ef9879cf405d%22%7D,%20%22pwa%22:%20%7B%22salesLine%22:%20%22Media%22,%20%22country%22:%20%22DE%22,%20%22language%22:%20%22de%22,%20%22globalLoyaltyProgram%22:%20true,%20%22fifaUserCreation%22:%20true%7D%7D",
+     json=branches_fixture,
+     status=200)
+
+    mm = client.Provider('MM')
+    search = client.BranchSearch(mm, "85298")
+    self.assertEqual(len(search.fetch_branches()), 10)
+
 # Run the tests
 if __name__ == '__main__':
   unittest.main()

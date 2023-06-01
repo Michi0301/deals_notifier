@@ -1,8 +1,8 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-from tgbot.handlers.fundgrube.static_text import search_button_text, register_search_button_text
-from tgbot.handlers.fundgrube.manage_data import PRODUCT_SEARCH
-from tgbot.handlers.fundgrube.manage_data import PRODUCT_SEARCH_REQUEST
+from tgbot.handlers.deal_search.static_text import search_button_text, register_search_button_text
+from tgbot.handlers.deal_search.manage_data import PRODUCT_SEARCH
+from tgbot.handlers.deal_search.manage_data import PRODUCT_SEARCH_REQUEST
 import urllib
 
 

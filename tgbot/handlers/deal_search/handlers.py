@@ -1,10 +1,10 @@
 from telegram import Update
 from telegram.ext import CallbackContext
-import utils.fundgrube_client as fundgrube
-from tgbot.handlers.fundgrube import static_text
-from tgbot.handlers.fundgrube.keyboards import make_keyboard_for_product_select_command
-from tgbot.handlers.fundgrube.keyboards import make_keyboard_for_register_search_command
-from tgbot.handlers.fundgrube.manage_data import PRODUCT_SEARCH, PRODUCT_SEARCH_REQUEST
+import deal_search.lib.deals_client.client as client
+from tgbot.handlers.deal_search import static_text
+from tgbot.handlers.deal_search.keyboards import make_keyboard_for_product_select_command
+from tgbot.handlers.deal_search.keyboards import make_keyboard_for_register_search_command
+from tgbot.handlers.deal_search.manage_data import PRODUCT_SEARCH, PRODUCT_SEARCH_REQUEST
 from users.models import User
 
 import re
@@ -14,9 +14,9 @@ from deal_search.models import SearchRequest
 
 def command_search(update: Update, context: CallbackContext) -> None:
     
-    mm = fundgrube.Provider('MM')
-    query = fundgrube.Query({"text": " ".join(context.args)})
-    search = fundgrube.FundgrubeSearch(mm, query)
+    mm = client.Provider('MM')
+    query = client.Query({"text": " ".join(context.args)})
+    search = client.Search(mm, query)
 
     cheapest_products = search.cheapest(3)
 
@@ -29,9 +29,9 @@ def command_search(update: Update, context: CallbackContext) -> None:
         update.message.reply_text(text=text)
 
 def command_product_select(update: Update, context: CallbackContext) -> None:
-    mm = fundgrube.Provider('MM')
-    query = fundgrube.Query({"text": " ".join(context.args)})
-    search = fundgrube.FundgrubeSearch(mm, query)
+    mm = client.Provider('MM')
+    query = client.Query({"text": " ".join(context.args)})
+    search = client.Search(mm, query)
 
     products = search.unique_pim_ids_with_name()
 
@@ -46,15 +46,15 @@ def command_product_select(update: Update, context: CallbackContext) -> None:
         update.message.reply_text(text=text)
 
 def command_search_offers_for_product_id(update: Update, context: CallbackContext) -> None:
-    provider = fundgrube.Provider('MM')
+    provider = client.Provider('MM')
     
     callback_data = update.callback_query["data"]
     exp = re.compile(f"{PRODUCT_SEARCH}:(.*)")
     pim_id = re.findall(exp, callback_data)[0]
 
     query_params = {"text": pim_id}
-    query = fundgrube.Query(query_params)
-    search = fundgrube.FundgrubeSearch(provider, query)
+    query = client.Query(query_params)
+    search = client.Search(provider, query)
 
     cheapest_products = search.cheapest(3)
 
@@ -78,8 +78,6 @@ def command_register_search(update: Update, context: CallbackContext) -> None:
     callback_data = update.callback_query["data"]
     exp = re.compile(f"{PRODUCT_SEARCH_REQUEST}:(.*):(.*):(.*)")
     provider, pim_id, price = re.findall(exp, callback_data)[0]
-    print(provider)
-    print(pim_id)
-    print(price)
+
     u = User.get_user(update, context)
     SearchRequest.objects.create(user=u, provider=provider, product_id=pim_id, price=price)

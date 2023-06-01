@@ -1,5 +1,6 @@
 pytz
 requests
+responses
 python-dotenv
 
 ipython==8.5.0  # enhanced python interpreter

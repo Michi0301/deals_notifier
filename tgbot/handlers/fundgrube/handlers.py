@@ -5,9 +5,11 @@ from tgbot.handlers.fundgrube import static_text
 from tgbot.handlers.fundgrube.keyboards import make_keyboard_for_product_select_command
 from tgbot.handlers.fundgrube.keyboards import make_keyboard_for_register_search_command
 from tgbot.handlers.fundgrube.manage_data import PRODUCT_SEARCH, PRODUCT_SEARCH_REQUEST
-import json
+from users.models import User
 
 import re
+
+from deal_search.models import SearchRequest
 
 
 def command_search(update: Update, context: CallbackContext) -> None:
@@ -79,3 +81,5 @@ def command_register_search(update: Update, context: CallbackContext) -> None:
     print(provider)
     print(pim_id)
     print(price)
+    u = User.get_user(update, context)
+    SearchRequest.objects.create(user=u, provider=provider, product_id=pim_id, price=price)

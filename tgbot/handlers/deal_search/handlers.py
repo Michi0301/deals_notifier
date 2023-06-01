@@ -2,8 +2,7 @@ from telegram import Update
 from telegram.ext import CallbackContext
 import deal_search.lib.deals_client.client as client
 from tgbot.handlers.deal_search import static_text
-from tgbot.handlers.deal_search.keyboards import make_keyboard_for_product_select_command
-from tgbot.handlers.deal_search.keyboards import make_keyboard_for_register_search_command
+from tgbot.handlers.deal_search.keyboards import make_keyboard_for_product_select_command, make_keyboard_for_register_search_command, make_keyboard_for_search_request_deletion
 from tgbot.handlers.deal_search.manage_data import PRODUCT_SEARCH, PRODUCT_SEARCH_REQUEST
 
 import re
@@ -78,6 +77,8 @@ def command_list_search_requests(update: Update, context: CallbackContext):
     if search_requests.exists():
         for search_request in search_requests:
             text = static_text.search_request.format(name=search_request.name, price=search_request.price)
-            update.effective_message.reply_text(text=text, parse_mode="HTML")
+            update.effective_message.reply_text(text=text,
+                                                reply_markup=make_keyboard_for_search_request_deletion(search_request.id),
+                                                parse_mode="HTML")
     else:
         update.effective_message.reply_text(text="You don't have any notifications setup.")

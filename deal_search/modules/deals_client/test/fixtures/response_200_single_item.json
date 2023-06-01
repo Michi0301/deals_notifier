@@ -1,0 +1,59 @@
+{
+    "categories": [
+        {
+            "id": "CAT_DE_MM_577",
+            "name": "Smartphone & Tarife",
+            "count": 224
+        }
+    ],
+    "brands": [
+        {
+            "id": 1676,
+            "name": "APPLE",
+            "count": 224
+        }
+    ],
+    "outlets": [
+        {
+            "id": 482,
+            "nameFull": "MediaMarkt München-Pasing",
+            "name": "München-Pasing",
+            "isActive": true,
+            "count": 1
+        }
+    ],
+    "text": [
+        {
+            "id": "search",
+            "name": "apple watch",
+            "count": 1
+        }
+    ],
+    "postings": [
+        {
+            "posting_id": "d3795a15-4417-4979-a259-929a9f81ec6d",
+            "posting_text": "Nr.: 2789\r\nBereits benutzte Online Kundenrücknahme wurde aber durch Fachwerkstatt getestet, gecleart, gereinigt und geprüft.",
+            "price": "200.00",
+            "price_old": "299.00",
+            "shipping_cost": 0,
+            "shipping_type": "shipping",
+            "discount_in_percent": 33,
+            "name": "APPLE Watch SE (GPS) 40mm Smartwatch Aluminium Fluorelastomer, 130 - 200 mm, Armband: Mitternacht, Gehäuse: Space Grau",
+            "brand": {
+                "id": 1676,
+                "name": "APPLE"
+            },
+            "eek": {},
+            "top_level_catalog_id": "CAT_DE_MM_577",
+            "original_url": [
+                "https://assets.mmsrg.com/is/166325/12975367df8e182e57044734f5165e190/c3/-/33259c945c9748b7a79d0007582e593c"
+            ],
+            "outlet": {
+                "id": 482,
+                "name": "München-Pasing"
+            },
+            "pim_id": 2764537
+        }
+    ],
+    "morePostingsAvailable": false
+}

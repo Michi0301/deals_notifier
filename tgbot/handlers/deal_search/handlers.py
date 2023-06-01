@@ -1,6 +1,6 @@
 from telegram import Update
 from telegram.ext import CallbackContext
-import deal_search.lib.deals_client.client as client
+import deal_search.modules.deals_client.client as client
 from tgbot.handlers.deal_search import static_text
 from tgbot.handlers.deal_search.keyboards import make_keyboard_for_product_select_command, make_keyboard_for_register_search_command, make_keyboard_for_search_request_deletion
 from tgbot.handlers.deal_search.manage_data import PRODUCT_SEARCH, PRODUCT_SEARCH_REQUEST

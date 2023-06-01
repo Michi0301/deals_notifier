@@ -5,10 +5,10 @@ from tgbot.handlers.deal_search import static_text
 from tgbot.handlers.deal_search.keyboards import make_keyboard_for_product_select_command
 from tgbot.handlers.deal_search.keyboards import make_keyboard_for_register_search_command
 from tgbot.handlers.deal_search.manage_data import PRODUCT_SEARCH, PRODUCT_SEARCH_REQUEST
-from users.models import User
 
 import re
 
+from users.models import User
 from deal_search.models import SearchRequest
 
 def command_product_select(update: Update, context: CallbackContext) -> None:
@@ -67,3 +67,11 @@ def command_register_search(update: Update, context: CallbackContext) -> None:
 
     text = static_text.notification_created
     update.effective_message.reply_text(text=text)
+
+def command_list_search_requests(update: Update, context: CallbackContext):
+    u = User.get_user(update, context)
+    search_requests = SearchRequest.objects.filter(user=u)
+    if search_requests.exists():
+        update.effective_message.reply_text(text=f"Found {search_requests.count()} entries.")
+    else:
+        update.effective_message.reply_text(text="You don't have any notifications setup.")

@@ -8,12 +8,12 @@ from tgbot.handlers.deal_search.manage_data import PRODUCT_SEARCH, PRODUCT_SEARC
 import re
 
 from users.models import User
-from deal_search.models import SearchRequest
+from deal_search.models import DealSearchRequest
 
 def command_product_select(update: Update, context: CallbackContext) -> None:
     mm = client.Provider('MM')
-    query = client.Query({"text": " ".join(context.args)})
-    search = client.Search(mm, query)
+    query = client.DealsQuery({"text": " ".join(context.args)})
+    search = client.DealSearch(mm, query)
 
     products = search.unique_pim_ids_with_name()
 
@@ -35,8 +35,8 @@ def command_search_offers_for_product_id(update: Update, context: CallbackContex
     pim_id = re.findall(exp, callback_data)[0]
 
     query_params = {"text": pim_id}
-    query = client.Query(query_params)
-    search = client.Search(provider, query)
+    query = client.DealsQuery(query_params)
+    search = client.DealSearch(provider, query)
 
     cheapest_products = search.cheapest(3)
 
@@ -64,16 +64,16 @@ def command_register_search(update: Update, context: CallbackContext) -> None:
     u = User.get_user(update, context)
     
     provider_instance = client.Provider(provider) 
-    name = client.Search.fetch_product_name(provider_instance, pim_id)
+    name = client.DealSearch.fetch_product_name(provider_instance, pim_id)
 
-    SearchRequest.objects.create(user=u, name=name, provider=provider, product_id=pim_id, price=price)
+    DealSearchRequest.objects.create(user=u, name=name, provider=provider, product_id=pim_id, price=price)
 
     text = static_text.notification_created
     update.effective_message.reply_text(text=text)
 
 def command_list_search_requests(update: Update, context: CallbackContext):
     u = User.get_user(update, context)
-    search_requests = SearchRequest.objects.filter(user=u)
+    search_requests = DealSearchRequest.objects.filter(user=u)
     if search_requests.exists():
         for search_request in search_requests:
             text = static_text.search_request.format(name=search_request.name, price=search_request.price)

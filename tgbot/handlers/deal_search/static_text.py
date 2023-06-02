@@ -14,3 +14,4 @@ search_request = "<b>Active Notification</b>\n" \
 delete_search_button_text= "Delete"
 no_location="Please sepcify a city or zip code."
 add_branch="Add"
+delete_branch="Delete"

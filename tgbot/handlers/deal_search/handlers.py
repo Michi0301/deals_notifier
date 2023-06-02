@@ -2,16 +2,17 @@ from telegram import Update
 from telegram.ext import CallbackContext
 import deal_search.modules.deals_client.client as client
 from tgbot.handlers.deal_search import static_text
-from tgbot.handlers.deal_search.keyboards import make_keyboard_for_product_select_command, make_keyboard_for_register_search_command, make_keyboard_for_search_request_deletion, make_keyboard_for_branch_selection
-from tgbot.handlers.deal_search.manage_data import PRODUCT_SEARCH, PRODUCT_SEARCH_REQUEST
+from tgbot.handlers.deal_search.keyboards import make_keyboard_for_product_select_command, make_keyboard_for_register_search_command, make_keyboard_for_search_request_deletion, make_keyboard_for_branch_selection, make_keyboard_for_branch_delete
+from tgbot.handlers.deal_search.manage_data import PRODUCT_SEARCH, PRODUCT_SEARCH_REQUEST, ADD_BRANCH
 
 import re
 
 from users.models import User, Location
-from deal_search.models import SearchRequest
+from deal_search.models import Branch, SearchRequest
 
 PROVIDER = 'MM'
 
+# Search products
 def command_product_select(update: Update, context: CallbackContext) -> None:
     mm = client.Provider(PROVIDER)
     query = client.DealsQuery({"text": " ".join(context.args)})
@@ -29,6 +30,7 @@ def command_product_select(update: Update, context: CallbackContext) -> None:
         text = static_text.none_found
         update.message.reply_text(text=text)
 
+# Search offers for a given product
 def command_search_offers_for_product_id(update: Update, context: CallbackContext) -> None:
     provider = client.Provider(PROVIDER)
     
@@ -52,23 +54,24 @@ def command_search_offers_for_product_id(update: Update, context: CallbackContex
             text = static_text.result.format(name=product.name, price=product.price, url=product.fundgrube_url())
             update.effective_message.reply_text(text=text, parse_mode="HTML")
         update.effective_message.reply_text(text=static_text.register_search,
-                                            reply_markup=make_keyboard_for_register_search_command(provider.identifier, product.pim_id, cheapest_price),
+                                            reply_markup=make_keyboard_for_register_search_command(product.pim_id, cheapest_price),
                                             parse_mode="HTML")
     else:
         text = static_text.none_found
         update.effective_message.reply_text(text=text)
 
+# Register search
 def command_register_search(update: Update, context: CallbackContext) -> None:
     callback_data = update.callback_query["data"]
-    exp = re.compile(f"{PRODUCT_SEARCH_REQUEST}:(.*):(.*):(.*)")
-    provider, pim_id, price = re.findall(exp, callback_data)[0]
+    exp = re.compile(f"{PRODUCT_SEARCH_REQUEST}:(.*):(.*)")
+    pim_id, price = re.findall(exp, callback_data)[0]
 
     u = User.get_user(update, context)
     
-    provider_instance = client.Provider(provider) 
+    provider_instance = client.Provider(PROVIDER) 
     name = client.DealSearch.fetch_product_name(provider_instance, pim_id)
 
-    SearchRequest.objects.create(user=u, name=name, provider=provider, product_id=pim_id, price=price)
+    SearchRequest.objects.create(user=u, name=name, provider=PROVIDER, product_id=pim_id, price=price)
 
     text = static_text.notification_created
     update.effective_message.reply_text(text=text)
@@ -85,6 +88,7 @@ def command_list_search_requests(update: Update, context: CallbackContext):
     else:
         update.effective_message.reply_text(text="You don't have any notifications setup.")
 
+## Branches
 def command_list_branches(update: Update, context: CallbackContext):
     u = User.get_user(update, context)
     location_str = " ".join(context.args)
@@ -104,7 +108,7 @@ def command_list_branches(update: Update, context: CallbackContext):
         for branch in branches:
             text = branch["displayName"]
             update.message.reply_text(text=text,
-                                        reply_markup=make_keyboard_for_branch_selection(PROVIDER, branch['id']),
+                                        reply_markup=make_keyboard_for_branch_selection(branch['id'], branch["displayNameShort"]),
                                         parse_mode="HTML")
     else:
         update.message.reply_text(text=static_text.no_location)
@@ -114,3 +118,14 @@ def fetch_branches_via_identifier(identifier):
 
 def fetch_branches_via_coordinates(coordinates):
     return client.BranchSearch(provider=client.Provider(PROVIDER), coordinates=coordinates).fetch_branches()
+
+def command_add_branch(update: Update, context: CallbackContext):
+    user = User.get_user(update, context)
+
+    callback_data = update.callback_query["data"]
+
+    exp = re.compile(f"{ADD_BRANCH}:(.*):(.*)")
+    branch_id, branch_name = re.findall(exp, callback_data)[0]
+
+    Branch.objects.get_or_create(user=user, provider=PROVIDER, branch_id=branch_id, name=branch_name)
+    update.effective_message.edit_reply_markup(reply_markup=make_keyboard_for_branch_delete(branch_id))

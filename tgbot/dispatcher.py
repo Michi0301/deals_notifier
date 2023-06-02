@@ -62,7 +62,7 @@ def setup_dispatcher(dp):
     dp.add_handler(CommandHandler("lb", deal_search_handlers.command_list_branches))
 
     dp.add_handler(CallbackQueryHandler(deal_search_handlers.command_search_offers_for_product_id, pattern=f"^{PRODUCT_SEARCH}:.*"))
-    dp.add_handler(CallbackQueryHandler(deal_search_handlers.command_register_search, pattern=f"^{PRODUCT_SEARCH_REQUEST}:.*"))
+    dp.add_handler(CallbackQueryHandler(deal_search_handlers.command_create_search_request, pattern=f"^{PRODUCT_SEARCH_REQUEST}:.*"))
     dp.add_handler(CallbackQueryHandler(deal_search_handlers.command_add_branch, pattern=f"^{ADD_BRANCH}:.*"))
     dp.add_handler(CallbackQueryHandler(deal_search_handlers.command_delete_branch, pattern=f"^{DELETE_BRANCH}:.*"))
 

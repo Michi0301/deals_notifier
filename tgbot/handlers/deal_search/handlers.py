@@ -2,7 +2,7 @@ from telegram import Update
 from telegram.ext import CallbackContext
 import deal_search.modules.deals_client.client as client
 from tgbot.handlers.deal_search import static_text
-from tgbot.handlers.deal_search.keyboards import make_keyboard_for_product_select_command, make_keyboard_for_register_search_command, make_keyboard_for_search_request_deletion, make_keyboard_for_branch_selection, make_keyboard_for_branch_delete
+from tgbot.handlers.deal_search.keyboards import make_keyboard_for_product_search_command, make_keyboard_for_create_search_request_command, make_keyboard_for_search_request_deletion, make_keyboard_for_branch_selection, make_keyboard_for_branch_delete
 from tgbot.handlers.deal_search.manage_data import PRODUCT_SEARCH, PRODUCT_SEARCH_REQUEST, ADD_BRANCH, DELETE_BRANCH
 
 import re
@@ -24,60 +24,66 @@ def command_product_select(update: Update, context: CallbackContext) -> None:
         for id, name in products.items():
             text = static_text.product.format(name=name)
             update.message.reply_text(text=text,
-                                      reply_markup=make_keyboard_for_product_select_command(id),
+                                      reply_markup=make_keyboard_for_product_search_command(id),
                                       parse_mode="HTML")
     else:
         text = static_text.none_found
         update.message.reply_text(text=text)
 
-# Search offers for a given product
+# Search offers for a given product, offer keyboard to create search request
 def command_search_offers_for_product_id(update: Update, context: CallbackContext) -> None:
     provider = client.Provider(PROVIDER)
     
-    pim_id = extract_callback_data(update, f"{PRODUCT_SEARCH}:(.*)")
+    pim_id, search_type = extract_callback_data(update, f"{PRODUCT_SEARCH}:(.*):(.*)")
 
     query_params = {"text": pim_id}
+    if search_type == "LOCAL":
+        user = User.get_user(update, context)
+        query_params["outletIds"] = ','.join(map(lambda x: str(x), user.branch_set.values_list('branch_id', flat=True)))        
+
     query = client.DealsQuery(query_params)
     search = client.DealSearch(provider, query)
 
-    cheapest_products = search.cheapest(3)
-
-    cheapest_price = cheapest_products[0].price
+    cheapest_products = search.cheapest(5)
 
     if len(cheapest_products) > 0:
         product_name = cheapest_products[0].name
         header = static_text.result_header.format(product_name=product_name)
         update.effective_message.reply_text(text=header)
         for product in cheapest_products:
-            text = static_text.result.format(name=product.name, price=product.price, url=product.fundgrube_url())
+            text = static_text.result.format(name=product.name, price=product.price, branch_name=product.outlet_name, url=product.fundgrube_url())
             update.effective_message.reply_text(text=text, parse_mode="HTML")
-        update.effective_message.reply_text(text=static_text.register_search,
-                                            reply_markup=make_keyboard_for_register_search_command(product.pim_id, cheapest_price),
-                                            parse_mode="HTML")
     else:
-        text = static_text.none_found
-        update.effective_message.reply_text(text=text)
+        update.effective_message.reply_text(text=static_text.none_found, parse_mode="HTML")
+    
+    if search_type == 'LOCAL':
+        update.effective_message.reply_text(text=static_text.ask_for_notification_local,
+                                            reply_markup=make_keyboard_for_create_search_request_command(pim_id),
+                                            parse_mode="HTML")
 
-# Register search
-def command_register_search(update: Update, context: CallbackContext) -> None:
-    pim_id, price = extract_callback_data(update, f"{PRODUCT_SEARCH_REQUEST}:(.*):(.*)")
+# Create search request from keyboard callback
+def command_create_search_request(update: Update, context: CallbackContext) -> None:
+    pim_id, search_type = extract_callback_data(update, f"{PRODUCT_SEARCH_REQUEST}:(.*):(.*)")
 
-    u = User.get_user(update, context)
+    user = User.get_user(update, context)
     
     provider_instance = client.Provider(PROVIDER) 
     name = client.DealSearch.fetch_product_name(provider_instance, pim_id)
 
-    SearchRequest.objects.create(user=u, name=name, provider=PROVIDER, product_id=pim_id, price=price)
+    if not user.branch_set.exists():
+        update.effective_message.reply_text(text=static_text.no_branches)
+        return      
 
-    text = static_text.notification_created
-    update.effective_message.reply_text(text=text)
-
+    SearchRequest.objects.get_or_create(user=user, name=name, provider=PROVIDER, product_id=pim_id, search_type=search_type)
+    update.effective_message.reply_text(text=static_text.notification_created)
+    
+## List persisted search requests
 def command_list_search_requests(update: Update, context: CallbackContext):
     u = User.get_user(update, context)
     search_requests = SearchRequest.objects.filter(user=u)
     if search_requests.exists():
         for search_request in search_requests:
-            text = static_text.search_request.format(name=search_request.name, price=search_request.price)
+            text = static_text.search_request_local.format(name=search_request.name)
             update.effective_message.reply_text(text=text,
                                                 reply_markup=make_keyboard_for_search_request_deletion(search_request.id),
                                                 parse_mode="HTML")

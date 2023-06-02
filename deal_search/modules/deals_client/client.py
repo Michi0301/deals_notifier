@@ -103,7 +103,7 @@ class BranchSearch:
 
 """"
 Options for query_opts_dict:
-ouletIds=1,2,3
+outletIds=1,2,3
 brands=SONY
 categorieIds=CAT_DE_MM_202
 """

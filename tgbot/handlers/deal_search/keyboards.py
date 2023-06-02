@@ -1,6 +1,6 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-from tgbot.handlers.deal_search.static_text import search_button_text, create_search_button_text, delete_search_button_text, add_branch, delete_branch
+from tgbot.handlers.deal_search.static_text import search_button_text, create_search_button_text, delete_search_button, add_branch, delete_branch
 from tgbot.handlers.deal_search.manage_data import PRODUCT_SEARCH, PRODUCT_SEARCH_REQUEST, PRODUCT_SEARCH_REQUEST_DELETE, ADD_BRANCH, DELETE_BRANCH
 
 def make_keyboard_for_product_select_command(pim_id) -> InlineKeyboardMarkup:
@@ -21,7 +21,7 @@ def make_keyboard_for_register_search_command(pim_id, price) -> InlineKeyboardMa
 def make_keyboard_for_search_request_deletion(search_request_id):
     callback_data = f'{PRODUCT_SEARCH_REQUEST_DELETE}:{search_request_id}'
     buttons = [[
-        InlineKeyboardButton(delete_search_button_text, callback_data=callback_data)
+        InlineKeyboardButton(delete_search_button, callback_data=callback_data)
     ]]
 
     return InlineKeyboardMarkup(buttons)

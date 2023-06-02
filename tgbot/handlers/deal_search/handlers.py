@@ -86,10 +86,10 @@ def command_list_search_requests(update: Update, context: CallbackContext):
                                                 reply_markup=make_keyboard_for_search_request_deletion(search_request.id),
                                                 parse_mode="HTML")
     else:
-        update.effective_message.reply_text(text="You don't have any notifications setup.")
+        update.effective_message.reply_text(text=static_text.no_searches)
 
 ## Branches
-def command_list_branches(update: Update, context: CallbackContext):
+def command_search_branches(update: Update, context: CallbackContext):
     u = User.get_user(update, context)
     location_str = " ".join(context.args)
     location_not_empty = bool(location_str.strip())
@@ -129,3 +129,17 @@ def command_add_branch(update: Update, context: CallbackContext):
 
     Branch.objects.get_or_create(user=user, provider=PROVIDER, branch_id=branch_id, name=branch_name)
     update.effective_message.edit_reply_markup(reply_markup=make_keyboard_for_branch_delete(branch_id))
+
+def command_list_branches(update: Update, context: CallbackContext):
+    user = User.get_user(update, context)
+
+    branches = Branch.objects.filter(user=user)
+    update.effective_message.reply_text(text=static_text.list_branches)
+    if branches.exists():
+        for branch in branches:
+            text = static_text.branch.format(name=branch.name)
+            update.effective_message.reply_text(text=text,
+                                                reply_markup=make_keyboard_for_branch_delete(branch.id),
+                                                parse_mode="HTML")
+    else:
+        update.effective_message.reply_text(text=static_text.no_branches)

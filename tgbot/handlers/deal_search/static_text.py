@@ -1,6 +1,6 @@
 result_header = "Offers for {product_name}:"
 result = "<b>{name}</b>\n" \
-         "<b>Price</b>: {price}\n" \
+         "<b>Price</b>: {price} €\n" \
          "{url}"
 product = "<b>{name}</b>"
 none_found = "Nothing found, please refine search."
@@ -16,6 +16,7 @@ no_searches = "You don't have any notifications setup."
 no_location = "Please sepcify a city or zip code."
 add_branch = "Add"
 delete_branch = "Delete"
-branch = "<b>{name}</b>\n"
+branch = "<b>{name}</b>"
+deleted_branch = "<s><b>{name}</b></s>"
 no_branches = "You don't have any branches setup."
 list_branches = "Your branches:"

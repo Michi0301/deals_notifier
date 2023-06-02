@@ -18,7 +18,7 @@ from tgbot.handlers.location import handlers as location_handlers
 from tgbot.handlers.onboarding import handlers as onboarding_handlers
 from tgbot.handlers.broadcast_message import handlers as broadcast_handlers
 from tgbot.handlers.deal_search import handlers as deal_search_handlers
-from tgbot.handlers.deal_search.manage_data import PRODUCT_SEARCH, PRODUCT_SEARCH_REQUEST, ADD_BRANCH
+from tgbot.handlers.deal_search.manage_data import PRODUCT_SEARCH, PRODUCT_SEARCH_REQUEST, ADD_BRANCH, DELETE_BRANCH
 
 from tgbot.main import bot
 
@@ -59,11 +59,13 @@ def setup_dispatcher(dp):
     dp.add_handler(CommandHandler("s", deal_search_handlers.command_product_select))
     dp.add_handler(CommandHandler("l", deal_search_handlers.command_list_search_requests))
     dp.add_handler(CommandHandler("b", deal_search_handlers.command_search_branches))
-    dp.add_handler(CommandHandler("bl", deal_search_handlers.command_list_branches))
+    dp.add_handler(CommandHandler("lb", deal_search_handlers.command_list_branches))
 
     dp.add_handler(CallbackQueryHandler(deal_search_handlers.command_search_offers_for_product_id, pattern=f"^{PRODUCT_SEARCH}:.*"))
     dp.add_handler(CallbackQueryHandler(deal_search_handlers.command_register_search, pattern=f"^{PRODUCT_SEARCH_REQUEST}:.*"))
     dp.add_handler(CallbackQueryHandler(deal_search_handlers.command_add_branch, pattern=f"^{ADD_BRANCH}:.*"))
+    dp.add_handler(CallbackQueryHandler(deal_search_handlers.command_delete_branch, pattern=f"^{DELETE_BRANCH}:.*"))
+
 
 
     # handling errors

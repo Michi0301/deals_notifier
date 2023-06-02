@@ -3,7 +3,7 @@ from telegram.ext import CallbackContext
 import deal_search.modules.deals_client.client as client
 from tgbot.handlers.deal_search import static_text
 from tgbot.handlers.deal_search.keyboards import make_keyboard_for_product_select_command, make_keyboard_for_register_search_command, make_keyboard_for_search_request_deletion, make_keyboard_for_branch_selection, make_keyboard_for_branch_delete
-from tgbot.handlers.deal_search.manage_data import PRODUCT_SEARCH, PRODUCT_SEARCH_REQUEST, ADD_BRANCH
+from tgbot.handlers.deal_search.manage_data import PRODUCT_SEARCH, PRODUCT_SEARCH_REQUEST, ADD_BRANCH, DELETE_BRANCH
 
 import re
 
@@ -143,3 +143,23 @@ def command_list_branches(update: Update, context: CallbackContext):
                                                 parse_mode="HTML")
     else:
         update.effective_message.reply_text(text=static_text.no_branches)
+
+def command_delete_branch(update: Update, context: CallbackContext):
+    user = User.get_user(update, context)
+
+    branch_id = extract_callback_data(update, f"{DELETE_BRANCH}:(.*)")
+
+
+    branches = Branch.objects.filter(user=user, id=branch_id)
+    foreign_branch_id = branches.last().branch_id
+    branch_name = branches.last().name
+    branches.delete()
+    
+    update.effective_message.edit_reply_markup(reply_markup=make_keyboard_for_branch_selection(foreign_branch_id, branch_name))
+
+# Utils
+def extract_callback_data(update, matcher):
+    callback_data = update.callback_query["data"]
+    exp = re.compile(matcher)
+    
+    return re.findall(exp, callback_data)[0]

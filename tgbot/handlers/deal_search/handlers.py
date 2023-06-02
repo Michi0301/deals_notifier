@@ -2,16 +2,18 @@ from telegram import Update
 from telegram.ext import CallbackContext
 import deal_search.modules.deals_client.client as client
 from tgbot.handlers.deal_search import static_text
-from tgbot.handlers.deal_search.keyboards import make_keyboard_for_product_select_command, make_keyboard_for_register_search_command, make_keyboard_for_search_request_deletion
+from tgbot.handlers.deal_search.keyboards import make_keyboard_for_product_select_command, make_keyboard_for_register_search_command, make_keyboard_for_search_request_deletion, make_keyboard_for_branch_selection
 from tgbot.handlers.deal_search.manage_data import PRODUCT_SEARCH, PRODUCT_SEARCH_REQUEST
 
 import re
 
-from users.models import User
-from deal_search.models import DealSearchRequest
+from users.models import User, Location
+from deal_search.models import SearchRequest
+
+PROVIDER = 'MM'
 
 def command_product_select(update: Update, context: CallbackContext) -> None:
-    mm = client.Provider('MM')
+    mm = client.Provider(PROVIDER)
     query = client.DealsQuery({"text": " ".join(context.args)})
     search = client.DealSearch(mm, query)
 
@@ -28,7 +30,7 @@ def command_product_select(update: Update, context: CallbackContext) -> None:
         update.message.reply_text(text=text)
 
 def command_search_offers_for_product_id(update: Update, context: CallbackContext) -> None:
-    provider = client.Provider('MM')
+    provider = client.Provider(PROVIDER)
     
     callback_data = update.callback_query["data"]
     exp = re.compile(f"{PRODUCT_SEARCH}:(.*)")
@@ -66,14 +68,14 @@ def command_register_search(update: Update, context: CallbackContext) -> None:
     provider_instance = client.Provider(provider) 
     name = client.DealSearch.fetch_product_name(provider_instance, pim_id)
 
-    DealSearchRequest.objects.create(user=u, name=name, provider=provider, product_id=pim_id, price=price)
+    SearchRequest.objects.create(user=u, name=name, provider=provider, product_id=pim_id, price=price)
 
     text = static_text.notification_created
     update.effective_message.reply_text(text=text)
 
 def command_list_search_requests(update: Update, context: CallbackContext):
     u = User.get_user(update, context)
-    search_requests = DealSearchRequest.objects.filter(user=u)
+    search_requests = SearchRequest.objects.filter(user=u)
     if search_requests.exists():
         for search_request in search_requests:
             text = static_text.search_request.format(name=search_request.name, price=search_request.price)
@@ -82,3 +84,33 @@ def command_list_search_requests(update: Update, context: CallbackContext):
                                                 parse_mode="HTML")
     else:
         update.effective_message.reply_text(text="You don't have any notifications setup.")
+
+def command_list_branches(update: Update, context: CallbackContext):
+    u = User.get_user(update, context)
+    location_str = " ".join(context.args)
+    location_not_empty = bool(location_str.strip())
+    last_location = Location.objects.filter(user=u).last()
+
+    if location_not_empty:
+        branches = fetch_branches_via_identifier(location_str)
+    
+    elif last_location:
+        branches = fetch_branches_via_coordinates({"lat": last_location.latitude, "lng": last_location.longitude})
+    
+    else:
+        branches = []
+
+    if len(branches) > 0:
+        for branch in branches:
+            text = branch["displayName"]
+            update.message.reply_text(text=text,
+                                        reply_markup=make_keyboard_for_branch_selection(PROVIDER, branch['id']),
+                                        parse_mode="HTML")
+    else:
+        update.message.reply_text(text=static_text.no_location)
+
+def fetch_branches_via_identifier(identifier):
+    return client.BranchSearch(provider=client.Provider(PROVIDER), zip_or_city=identifier).fetch_branches()
+
+def fetch_branches_via_coordinates(coordinates):
+    return client.BranchSearch(provider=client.Provider(PROVIDER), coordinates=coordinates).fetch_branches()

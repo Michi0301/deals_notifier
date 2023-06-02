@@ -12,3 +12,5 @@ search_request = "<b>Active Notification</b>\n" \
                 "Title: <b>{name}</b>\n" \
                 "Price must be cheaper than <b>{price} €</b>"
 delete_search_button_text= "Delete"
+no_location="Please sepcify a city or zip code."
+add_branch="Add"

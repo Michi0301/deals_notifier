@@ -50,10 +50,14 @@ Returns a list with 10 branches in the follwing format:
 }
 """ 
 class BranchSearch:
-    def __init__(self, provider, zip_or_city):
+    def __init__(self, provider, zip_or_city="", coordinates={"lat": 0, "lng": 0}, limit = 10):
         self.provider = provider
-        self.zip_or_city = zip_or_city
-        self.variables = {"limit": 10, "pos": {"lat": 0,"lng": 0}, "zipCodeOrCity": self.zip_or_city}
+        
+        if bool(zip_or_city.strip()):
+            self.variables = {"limit": limit, "zipCodeOrCity": zip_or_city}
+        else:
+            self.variables = {"limit": limit, "pos": coordinates}
+        
 
         if provider.identifier == 'MM':
             sales_line = "Media"

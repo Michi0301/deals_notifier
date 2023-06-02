@@ -34,9 +34,7 @@ def command_product_select(update: Update, context: CallbackContext) -> None:
 def command_search_offers_for_product_id(update: Update, context: CallbackContext) -> None:
     provider = client.Provider(PROVIDER)
     
-    callback_data = update.callback_query["data"]
-    exp = re.compile(f"{PRODUCT_SEARCH}:(.*)")
-    pim_id = re.findall(exp, callback_data)[0]
+    pim_id = extract_callback_data(update, f"{PRODUCT_SEARCH}:(.*)")
 
     query_params = {"text": pim_id}
     query = client.DealsQuery(query_params)
@@ -62,9 +60,7 @@ def command_search_offers_for_product_id(update: Update, context: CallbackContex
 
 # Register search
 def command_register_search(update: Update, context: CallbackContext) -> None:
-    callback_data = update.callback_query["data"]
-    exp = re.compile(f"{PRODUCT_SEARCH_REQUEST}:(.*):(.*)")
-    pim_id, price = re.findall(exp, callback_data)[0]
+    pim_id, price = extract_callback_data(update, f"{PRODUCT_SEARCH_REQUEST}:(.*):(.*)")
 
     u = User.get_user(update, context)
     
@@ -122,10 +118,7 @@ def fetch_branches_via_coordinates(coordinates):
 def command_add_branch(update: Update, context: CallbackContext):
     user = User.get_user(update, context)
 
-    callback_data = update.callback_query["data"]
-
-    exp = re.compile(f"{ADD_BRANCH}:(.*):(.*)")
-    branch_id, branch_name = re.findall(exp, callback_data)[0]
+    branch_id, branch_name = extract_callback_data(update, f"{ADD_BRANCH}:(.*):(.*)")
 
     Branch.objects.get_or_create(user=user, provider=PROVIDER, branch_id=branch_id, name=branch_name)
     update.effective_message.edit_reply_markup(reply_markup=make_keyboard_for_branch_delete(branch_id))

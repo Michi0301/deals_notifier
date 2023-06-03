@@ -19,14 +19,15 @@ class SearchRequest(models.Model):
         print(new_postings)
 
         ## Add logic to notify here
-        
+
         ## Store new found posting_ids
         for posting in new_postings:
             IndexedPosting.objects.create(search_request=self, posting_id=posting.id)
     
     def _fetch_postings(self):
         provider = client.Provider(self.provider)
-        outlet_ids = ','.join(map(lambda x: str(x), self.user.branch_set.values_list('branch_id', flat=True)))
+        outlet_ids = ','.join([str(branch_id) for branch_id in self.user.branch_set.values_list('branch_id', flat=True)])
+
         query_params = {"text": self.product_id, "outletIds": outlet_ids}
         query = client.DealsQuery(query_params)
         search = client.DealSearch(provider, query)

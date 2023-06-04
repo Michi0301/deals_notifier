@@ -1,7 +1,8 @@
 from django.db import models
 from users.models import User
-
+from tgbot.handlers.broadcast_message.utils import send_one_message
 import deal_search.modules.deals_client.client as client
+from tgbot.handlers.deal_search import static_text
 
 class SearchRequest(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -19,6 +20,9 @@ class SearchRequest(models.Model):
         print(new_postings)
 
         ## Add logic to notify here
+        for posting in new_postings:
+            text = static_text.result.format(name=posting.name, price=posting.price, branch_name=posting.outlet_name, url=posting.fundgrube_url())
+            send_one_message(text=text, user_id=self.user.user_id)
 
         ## Store new found posting_ids
         for posting in new_postings:

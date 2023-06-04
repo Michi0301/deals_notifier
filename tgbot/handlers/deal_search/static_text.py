@@ -1,8 +1,7 @@
 result_header = "Offers for {product_name}:"
-result = "<b>{name}</b>\n" \
+result = "<a href='{url}'><b>{name}</b></a>\n" \
          "<b>Price:</b> {price} €\n" \
-         "<b>Where:</b> {branch_name}\n" \
-         "<b>Url:</b> {url}"
+         "<b>Where:</b> {branch_name}\n"
 product = "<b>{name}</b>"
 none_found = "Nothing found 😕."
 search_button_text_local = "🔎 my branches"

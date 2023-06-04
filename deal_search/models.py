@@ -28,6 +28,11 @@ class SearchRequest(models.Model):
         for posting in new_postings:
             IndexedPosting.objects.create(search_request=self, posting_id=posting.id)
     
+    @classmethod
+    def fetch_items_and_notify_all(cls):
+        for search_request in cls.objects.all():
+            search_request.fetch_items_and_notify()
+    
     def _fetch_postings(self):
         provider = client.Provider(self.provider)
         outlet_ids = ','.join([str(branch_id) for branch_id in self.user.branch_set.values_list('branch_id', flat=True)])

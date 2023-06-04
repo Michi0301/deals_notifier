@@ -4,7 +4,7 @@ from tgbot.handlers.broadcast_message.utils import send_one_message
 import deal_search.modules.deals_client.client as client
 from tgbot.handlers.deal_search import static_text
 
-class SearchRequest(models.Model):
+class Notification(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     provider = models.CharField(max_length=10)
@@ -26,12 +26,12 @@ class SearchRequest(models.Model):
 
         ## Store new found posting_ids
         for posting in new_postings:
-            IndexedPosting.objects.create(search_request=self, posting_id=posting.id)
+            IndexedPosting.objects.create(notification=self, posting_id=posting.id)
     
     @classmethod
     def fetch_items_and_notify_all(cls):
-        for search_request in cls.objects.all():
-            search_request.fetch_items_and_notify()
+        for notification in cls.objects.all():
+            notification.fetch_items_and_notify()
     
     def _fetch_postings(self):
         provider = client.Provider(self.provider)
@@ -57,5 +57,5 @@ class Branch(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
 class IndexedPosting(models.Model):
-    search_request = models.ForeignKey(SearchRequest, on_delete=models.CASCADE)
+    notification = models.ForeignKey(Notification, on_delete=models.CASCADE)
     posting_id = models.CharField(max_length=255)

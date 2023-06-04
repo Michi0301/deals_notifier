@@ -2,13 +2,13 @@ from telegram import Update
 from telegram.ext import CallbackContext
 import deal_search.modules.deals_client.client as client
 from tgbot.handlers.deal_search import static_text
-from tgbot.handlers.deal_search.keyboards import make_keyboard_for_product_search_command, make_keyboard_for_create_search_request_command, make_keyboard_for_search_request_deletion, make_keyboard_for_branch_selection, make_keyboard_for_branch_delete
+from tgbot.handlers.deal_search.keyboards import make_keyboard_for_product_search_command, make_keyboard_for_create_notification_command, make_keyboard_for_notification_deletion, make_keyboard_for_branch_selection, make_keyboard_for_branch_delete
 from tgbot.handlers.deal_search.manage_data import PRODUCT_SEARCH, PRODUCT_SEARCH_REQUEST, ADD_BRANCH, DELETE_BRANCH
 
 import re
 
 from users.models import User, Location
-from deal_search.models import Branch, SearchRequest
+from deal_search.models import Branch, Notification
 
 PROVIDER = 'MM'
 
@@ -58,11 +58,11 @@ def command_search_offers_for_product_id(update: Update, context: CallbackContex
     
     if search_type == 'LOCAL':
         update.effective_message.reply_text(text=static_text.ask_for_notification_local,
-                                            reply_markup=make_keyboard_for_create_search_request_command(pim_id),
+                                            reply_markup=make_keyboard_for_create_notification_command(pim_id),
                                             parse_mode="HTML")
 
 # Create search request from keyboard callback
-def command_create_search_request(update: Update, context: CallbackContext) -> None:
+def command_create_notification(update: Update, context: CallbackContext) -> None:
     pim_id, search_type = extract_callback_data(update, f"{PRODUCT_SEARCH_REQUEST}:(.*):(.*)")
 
     user = User.get_user(update, context)
@@ -74,18 +74,18 @@ def command_create_search_request(update: Update, context: CallbackContext) -> N
         update.effective_message.reply_text(text=static_text.no_branches)
         return      
 
-    SearchRequest.objects.get_or_create(user=user, name=name, provider=PROVIDER, product_id=pim_id, search_type=search_type)
+    Notification.objects.get_or_create(user=user, name=name, provider=PROVIDER, product_id=pim_id, search_type=search_type)
     update.effective_message.reply_text(text=static_text.notification_created)
     
 ## List persisted search requests
-def command_list_search_requests(update: Update, context: CallbackContext):
+def command_list_notifications(update: Update, context: CallbackContext):
     u = User.get_user(update, context)
-    search_requests = SearchRequest.objects.filter(user=u)
-    if search_requests.exists():
-        for search_request in search_requests:
-            text = static_text.search_request_local.format(name=search_request.name)
+    notifications = Notification.objects.filter(user=u)
+    if notifications.exists():
+        for notification in notifications:
+            text = static_text.notification_local.format(name=notification.name)
             update.effective_message.reply_text(text=text,
-                                                reply_markup=make_keyboard_for_search_request_deletion(search_request.id),
+                                                reply_markup=make_keyboard_for_notification_deletion(notification.id),
                                                 parse_mode="HTML")
     else:
         update.effective_message.reply_text(text=static_text.no_searches)

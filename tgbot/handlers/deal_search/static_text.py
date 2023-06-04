@@ -8,7 +8,7 @@ none_found = "Nothing found 😕."
 search_button_text_local = "🔎 my branches"
 search_button_text_cheapest = "🔎 cheapest"
 notification_created = "I'll drop you a message as soon as I find one!"
-search_request_local = "🚨 <b>Active Notification</b>🚨\n" \
+notification_local = "🚨 <b>Active Notification</b>🚨\n" \
                 "<b>{name}</b>\n" \
                 "I'll notify you when this item available in your branches."
 delete_search_button= "Delete"

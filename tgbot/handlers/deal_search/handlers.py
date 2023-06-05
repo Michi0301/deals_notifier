@@ -52,7 +52,7 @@ def command_search_offers_for_product_id(update: Update, context: CallbackContex
         update.effective_message.reply_text(text=header)
         for product in cheapest_products:
             text = static_text.result.format(name=product.name, price=product.price, branch_name=product.outlet_name, url=product.fundgrube_url())
-            update.effective_message.reply_text(text=text, parse_mode="HTML")
+            update.effective_message.reply_text(text=text, parse_mode="HTML", disable_web_page_preview=True)
     else:
         update.effective_message.reply_text(text=static_text.none_found, parse_mode="HTML")
     

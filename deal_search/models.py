@@ -19,10 +19,10 @@ class Notification(models.Model):
 
         print(new_postings)
 
-        ## Add logic to notify here
+        ## Send telegram notification
         for posting in new_postings:
             text = static_text.result.format(name=posting.name, price=posting.price, branch_name=posting.outlet_name, url=posting.fundgrube_url())
-            send_one_message(text=text, user_id=self.user.user_id)
+            send_one_message(text=text, user_id=self.user.user_id, disable_web_page_preview=True)
 
         ## Store new found posting_ids
         for posting in new_postings:

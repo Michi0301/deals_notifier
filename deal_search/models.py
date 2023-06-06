@@ -17,16 +17,14 @@ class Notification(models.Model):
 
         new_postings = self._find_new_postings(postings)
 
-        print(new_postings)
-
         ## Send telegram notification
-        for posting in new_postings:
-            text = static_text.result.format(name=posting.name, price=posting.price, branch_name=posting.outlet_name, url=posting.fundgrube_url())
-            send_one_message(text=text, user_id=self.user.user_id, disable_web_page_preview=True)
-
-        ## Store new found posting_ids
-        for posting in new_postings:
-            IndexedPosting.objects.create(notification=self, posting_id=posting.id)
+        if len(postings) > 0:
+            for posting in new_postings:
+                text = static_text.result.format(name=posting.name, price=posting.price, branch_name=posting.outlet_name, url=posting.fundgrube_url())
+                send_one_message(text=text, user_id=self.user.user_id, disable_web_page_preview=True)
+                
+                ## Store new found posting_ids    
+                IndexedPosting.objects.create(notification=self, posting_id=posting.id)
     
     @classmethod
     def fetch_items_and_notify_all(cls):

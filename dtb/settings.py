@@ -6,6 +6,7 @@ import dj_database_url
 import dotenv
 
 from pathlib import Path
+from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -149,6 +150,12 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_TASK_DEFAULT_QUEUE = 'default'
+CELERY_BEAT_SCHEDULE = {
+    "notify_new_deals": {
+        "task": "deal_search.tasks.notify_new_deals",
+        "schedule": crontab(hour="9, 12, 15, 18, 21"),
+    }
+}
 
 
 # -----> TELEGRAM

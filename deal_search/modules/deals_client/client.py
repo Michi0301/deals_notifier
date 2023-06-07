@@ -89,7 +89,7 @@ class BranchSearch:
         response = session.get(self.build_url(), headers=headers)
 
         print("Response Code:")
-        print(response.code)
+        print(response.status_code)
         print("Response:")
         print(response.text)
 

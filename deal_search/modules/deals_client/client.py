@@ -84,9 +84,15 @@ class BranchSearch:
         session.headers = headers
         session.mount('https://', HTTPAdapter(max_retries=Retry(total=0)))
 
-        logging.info(f"Requesting: {self.build_url()}")
+        print(f"Requesting: {self.build_url()}")
 
         response = session.get(self.build_url(), headers=headers)
+
+        print("Response Code:")
+        print(response.code)
+        print("Response:")
+        print(response.text)
+
 
         if response.status_code == 200:
             closest_stores =  response.json()["data"]["closestStores"]

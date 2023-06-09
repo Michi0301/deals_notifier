@@ -8,13 +8,13 @@ from tgbot.handlers.deal_search.manage_data import PRODUCT_SEARCH, PRODUCT_SEARC
 import re
 
 from users.models import User, Location
-from deal_search.models import Branch, Notification
+from deal_search.models import Branch, Notification, Provider, BranchSelection
 
-PROVIDER = 'MM'
+PROVIDER, _ = Provider.objects.get_or_create(identifier = 'MM')
 
 # Search products
 def command_product_select(update: Update, context: CallbackContext) -> None:
-    mm = client.Provider(PROVIDER)
+    mm = client.Provider(PROVIDER.identifier)
     query = client.DealsQuery({"text": " ".join(context.args)})
     search = client.DealSearch(mm, query)
 
@@ -32,7 +32,7 @@ def command_product_select(update: Update, context: CallbackContext) -> None:
 
 # Search offers for a given product, offer keyboard to create search request
 def command_search_offers_for_product_id(update: Update, context: CallbackContext) -> None:
-    provider = client.Provider(PROVIDER)
+    provider = client.Provider(PROVIDER.identifier)
     
     pim_id, search_type = extract_callback_data(update, f"{PRODUCT_SEARCH}:(.*):(.*)")
 
@@ -67,7 +67,7 @@ def command_create_notification(update: Update, context: CallbackContext) -> Non
 
     user = User.get_user(update, context)
     
-    provider_instance = client.Provider(PROVIDER) 
+    provider_instance = client.Provider(PROVIDER.identifier) 
     name = client.DealSearch.fetch_product_name(provider_instance, pim_id)
 
     if not user.branch_set.exists():
@@ -116,29 +116,31 @@ def command_search_branches(update: Update, context: CallbackContext):
         update.message.reply_text(text=static_text.no_location)
 
 def fetch_branches_via_identifier(identifier):
-    return client.BranchSearch(provider=client.Provider(PROVIDER), zip_or_city=identifier).fetch_branches()
+    return client.BranchSearch(provider=client.Provider(PROVIDER.identifier), zip_or_city=identifier).fetch_branches()
 
 def fetch_branches_via_coordinates(coordinates):
-    return client.BranchSearch(provider=client.Provider(PROVIDER), coordinates=coordinates).fetch_branches()
+    return client.BranchSearch(provider=client.Provider(PROVIDER.identifier), coordinates=coordinates).fetch_branches()
 
 def command_add_branch(update: Update, context: CallbackContext):
     user = User.get_user(update, context)
 
     branch_id, branch_name = extract_callback_data(update, f"{ADD_BRANCH}:(.*):(.*)")
 
-    Branch.objects.get_or_create(user=user, provider=PROVIDER, branch_id=branch_id, name=branch_name)
+    branch, _ = Branch.objects.get_or_create(provider=PROVIDER, branch_id=branch_id, name=branch_name)
+    BranchSelection.objects.create(user=user, branch=branch)
     update.effective_message.edit_reply_markup(reply_markup=make_keyboard_for_branch_delete(branch_id))
 
 def command_list_branches(update: Update, context: CallbackContext):
     user = User.get_user(update, context)
+    
+    branch_selections = BranchSelection.objects.filter(user=user).select_related('branch')
 
-    branches = Branch.objects.filter(user=user)
     update.effective_message.reply_text(text=static_text.list_branches)
-    if branches.exists():
-        for branch in branches:
-            text = static_text.branch.format(name=branch.name)
+    if branch_selections.exists():
+        for branch_selection in branch_selections:
+            text = static_text.branch.format(name=branch_selection.branch.name)
             update.effective_message.reply_text(text=text,
-                                                reply_markup=make_keyboard_for_branch_delete(branch.id),
+                                                reply_markup=make_keyboard_for_branch_delete(branch_selection.branch.branch_id),
                                                 parse_mode="HTML")
     else:
         update.effective_message.reply_text(text=static_text.no_branches)
@@ -147,12 +149,12 @@ def command_delete_branch(update: Update, context: CallbackContext):
     user = User.get_user(update, context)
 
     branch_id = extract_callback_data(update, f"{DELETE_BRANCH}:(.*)")
+    branch=Branch.objects.get(branch_id=branch_id)
 
-
-    branches = Branch.objects.filter(user=user, id=branch_id)
-    foreign_branch_id = branches.last().branch_id
-    branch_name = branches.last().name
-    branches.delete()
+    branch_selection = BranchSelection.objects.get(user=user, branch=branch)
+    foreign_branch_id = branch_selection.branch.branch_id
+    branch_name = branch_selection.branch.name
+    branch_selection.delete()
     
     update.effective_message.edit_reply_markup(reply_markup=make_keyboard_for_branch_selection(foreign_branch_id, branch_name))
 

@@ -4,10 +4,13 @@ from tgbot.handlers.broadcast_message.utils import send_one_message
 import deal_search.modules.deals_client.client as client
 from tgbot.handlers.deal_search import static_text
 
+class Provider(models.Model):
+    identifier = models.CharField(max_length=10)
+
 class Notification(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
-    provider = models.CharField(max_length=10)
+    provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
     product_id = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     search_type = models.CharField(max_length=10)
@@ -48,12 +51,28 @@ class Notification(models.Model):
         return [posting for posting in postings if posting.id not in indexed_posting_ids]
 
 class Branch(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
-    provider = models.CharField(max_length=10)
+    provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
     branch_id = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+class BranchSelection(models.Model):
+    user =  models.ForeignKey(User, on_delete=models.CASCADE)
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
 class IndexedPosting(models.Model):
     notification = models.ForeignKey(Notification, on_delete=models.CASCADE)
     posting_id = models.CharField(max_length=255)
+
+class Posting(models.Model):
+    provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+    posting_id = models.CharField(max_length=36)
+    product_id = models.IntegerField()
+    price = models.DecimalField(decimal_places=2,max_digits=8)
+    branch_id = models.IntegerField()
+    image_url = models.TextField()
+    shipping_type = models.CharField(max_length=255)
+    shipping_cost = models.DecimalField(decimal_places=2,max_digits=6)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)

@@ -54,7 +54,22 @@ class Branch(models.Model):
     name = models.CharField(max_length=255)
     provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
     branch_id = models.IntegerField()
+    zip_code = models.CharField(max_length=6)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    @classmethod
+    def sync_remote(cls, provider):
+        c_provider = client.Provider(provider.identifier)
+        search = client.BranchSearch(provider = c_provider, limit=1000)
+        c_branches = search.fetch_branches()
+
+        for branch in c_branches:
+            Branch.objects.get_or_create(
+                name = branch['displayNameShort'],
+                provider = provider,
+                branch_id = branch['id'],
+                zip_code = branch['address']['zipCode']
+            )
 
 class BranchSelection(models.Model):
     user =  models.ForeignKey(User, on_delete=models.CASCADE)

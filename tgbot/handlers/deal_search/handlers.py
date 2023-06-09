@@ -10,11 +10,13 @@ import re
 from users.models import User, Location
 from deal_search.models import Branch, Notification, Provider, BranchSelection
 
-PROVIDER, _ = Provider.objects.get_or_create(identifier = 'MM')
+def provider():
+    provider, _ = Provider.objects.get_or_create(identifier = 'MM')
+    return provider
 
 # Search products
 def command_product_select(update: Update, context: CallbackContext) -> None:
-    mm = client.Provider(PROVIDER.identifier)
+    mm = client.Provider(provider().identifier)
     query = client.DealsQuery({"text": " ".join(context.args)})
     search = client.DealSearch(mm, query)
 
@@ -32,7 +34,7 @@ def command_product_select(update: Update, context: CallbackContext) -> None:
 
 # Search offers for a given product, offer keyboard to create search request
 def command_search_offers_for_product_id(update: Update, context: CallbackContext) -> None:
-    provider = client.Provider(PROVIDER.identifier)
+    provider = client.Provider(provider().identifier)
     
     pim_id, search_type = extract_callback_data(update, f"{PRODUCT_SEARCH}:(.*):(.*)")
 
@@ -67,14 +69,14 @@ def command_create_notification(update: Update, context: CallbackContext) -> Non
 
     user = User.get_user(update, context)
     
-    provider_instance = client.Provider(PROVIDER.identifier) 
+    provider_instance = client.Provider(provider().identifier) 
     name = client.DealSearch.fetch_product_name(provider_instance, pim_id)
 
     if not user.branch_set.exists():
         update.effective_message.reply_text(text=static_text.no_branches)
         return      
 
-    Notification.objects.get_or_create(user=user, name=name, provider=PROVIDER, product_id=pim_id, search_type=search_type)
+    Notification.objects.get_or_create(user=user, name=name, provider=provider(), product_id=pim_id, search_type=search_type)
     update.effective_message.reply_text(text=static_text.notification_created)
     
 ## List persisted search requests
@@ -116,17 +118,17 @@ def command_search_branches(update: Update, context: CallbackContext):
         update.message.reply_text(text=static_text.no_location)
 
 def fetch_branches_via_identifier(identifier):
-    return client.BranchSearch(provider=client.Provider(PROVIDER.identifier), zip_or_city=identifier).fetch_branches()
+    return client.BranchSearch(provider=client.Provider(provider().identifier), zip_or_city=identifier).fetch_branches()
 
 def fetch_branches_via_coordinates(coordinates):
-    return client.BranchSearch(provider=client.Provider(PROVIDER.identifier), coordinates=coordinates).fetch_branches()
+    return client.BranchSearch(provider=client.Provider(provider().identifier), coordinates=coordinates).fetch_branches()
 
 def command_add_branch(update: Update, context: CallbackContext):
     user = User.get_user(update, context)
 
     branch_id, branch_name = extract_callback_data(update, f"{ADD_BRANCH}:(.*):(.*)")
 
-    branch, _ = Branch.objects.get_or_create(provider=PROVIDER, branch_id=branch_id, name=branch_name)
+    branch, _ = Branch.objects.get_or_create(provider=provider(), branch_id=branch_id, name=branch_name)
     BranchSelection.objects.create(user=user, branch=branch)
     update.effective_message.edit_reply_markup(reply_markup=make_keyboard_for_branch_delete(branch_id))
 

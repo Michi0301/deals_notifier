@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     # 3rd party apps
     'django_celery_beat',
     'debug_toolbar',
+    'django_extensions',
 
     # local apps
     'users.apps.UsersConfig',

@@ -116,8 +116,9 @@ categorieIds=CAT_DE_MM_202
 
 class DealsQuery:
     def __init__(self, query_opts_dict):
+        # Don't go over 99
         defaults = {
-            "limit": 100,
+            "limit": 99,
             "offset": 0
         }
         self.query_opts = defaults | query_opts_dict
@@ -135,7 +136,7 @@ class ResultDict:
 
 @dataclass
 class Posting:
-    id: int
+    id: str
     text: str
     pim_id: int
     price: float
@@ -148,7 +149,7 @@ class Posting:
     outlet_id: int
     outlet_name: str
     discount_in_percent: int
-    top_level_catalog_id: str
+    top_level_catalog_id: str   
     original_url: str
     provider: Provider
 

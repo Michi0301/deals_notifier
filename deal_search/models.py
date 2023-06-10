@@ -83,11 +83,49 @@ class IndexedPosting(models.Model):
 class Posting(models.Model):
     provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
+    description = models.TextField()
     posting_id = models.CharField(max_length=36)
     product_id = models.IntegerField()
     price = models.DecimalField(decimal_places=2,max_digits=8)
-    branch_id = models.IntegerField()
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE)
     image_url = models.TextField()
     shipping_type = models.CharField(max_length=255)
     shipping_cost = models.DecimalField(decimal_places=2,max_digits=6)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    @classmethod
+    def sync_remote_by_branch(cls, provider, branch):
+        c_provider = client.Provider(provider.identifier)
+        c_query = client.DealsQuery({"outletIds": branch.branch_id})
+        c_search = client.DealSearch(c_provider, c_query)
+
+        c_postings = c_search.postings()
+
+        known_posting_ids = [posting.posting_id for posting in Posting.objects.filter(provider=provider, branch=branch).only('posting_id')]
+
+        created_count = 0
+        for c_posting in c_postings:
+            if c_posting.id in known_posting_ids:
+                continue
+            else:
+                Posting.objects.create(
+                    provider = provider,
+                    name = c_posting.name,
+                    description = c_posting.text,
+                    posting_id = c_posting.id,
+                    product_id = c_posting.pim_id,
+                    price = c_posting.price,
+                    branch = branch,
+                    image_url = c_posting.original_url,
+                    shipping_type = c_posting.shipping_type,
+                    shipping_cost = c_posting.shipping_cost
+                )
+
+                created_count += 1
+        
+        print(f"Branch {branch.branch_id}: Created {created_count} postings.")
+
+    @classmethod
+    def sync_remote(cls):
+        for branch in Branch.objects.all():
+            cls.sync_remote_by_branch(branch.provider, branch)

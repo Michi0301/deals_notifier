@@ -1,29 +1,27 @@
-import unittest
+from unittest import TestCase
 import responses
 import json
 import sys
+import os
+from deal_search.modules.deals_client import client
 
-sys.path.append("..")
-import client
-
-
-class TestClient(unittest.TestCase):
-
+class TestClient(TestCase):
   @responses.activate
   def test_results_present(self):
-    fixture_1 = json.loads(open("fixtures/response_200_1.json", "r").read())
-    fixture_2 = json.loads(open("fixtures/response_200_2.json", "r").read())
+    
+    fixture_1 = json.loads(open(os.path.join(os.path.dirname(__file__), "fixtures", "response_200_1.json"), "r").read())
+    fixture_2 = json.loads(open(os.path.join(os.path.dirname(__file__), "fixtures", "response_200_2.json"), "r").read())
 
 
     responses.add(
       responses.GET,
-      "https://www.mediamarkt.de/de/data/fundgrube/api/postings?limit=100&offset=0&text=testitem",
+      "https://www.mediamarkt.de/de/data/fundgrube/api/postings?limit=99&offset=0&text=testitem",
       json=fixture_1,
       status=200)
     
     responses.add(
       responses.GET,
-      "https://www.mediamarkt.de/de/data/fundgrube/api/postings?limit=100&offset=100&text=testitem",
+      "https://www.mediamarkt.de/de/data/fundgrube/api/postings?limit=99&offset=100&text=testitem",
       json=fixture_2,
       status=200)
 
@@ -35,7 +33,7 @@ class TestClient(unittest.TestCase):
 
   @responses.activate
   def test_fetch_product_name(self):
-    single_item_fixture = json.loads(open("fixtures/response_200_single_item.json", "r").read())
+    single_item_fixture = json.loads(open(os.path.join(os.path.dirname(__file__), "fixtures", "response_200_single_item.json"), "r").read())
 
     responses.add(
       responses.GET,
@@ -54,7 +52,7 @@ class TestClient(unittest.TestCase):
 
     responses.add(
       responses.GET,
-      "https://www.mediamarkt.de/de/data/fundgrube/api/postings?limit=100&offset=0&text=testitem-not-found",
+      "https://www.mediamarkt.de/de/data/fundgrube/api/postings?limit=99&offset=0&text=testitem-not-found",
       json=response,
       status=200)
     
@@ -68,7 +66,7 @@ class TestClient(unittest.TestCase):
   def test_results_not_200(self):
     responses.add(
       responses.GET,
-      "https://www.mediamarkt.de/de/data/fundgrube/api/postings?limit=100&offset=0&text=error",
+      "https://www.mediamarkt.de/de/data/fundgrube/api/postings?limit=99&offset=0&text=error",
       json='',
       status=422)
     
@@ -79,7 +77,7 @@ class TestClient(unittest.TestCase):
 
   @responses.activate
   def test_branch_search(self):
-    branches_fixture = json.loads(open("fixtures/response_200_branch_search.json", "r").read())
+    branches_fixture = json.loads(open(os.path.join(os.path.dirname(__file__), "fixtures", "response_200_branch_search.json"), "r").read())
     responses.add(
      responses.GET,
      "https://www.mediamarkt.de/api/v1/graphql?variables=%7B%22limit%22:%2010,%20%22zipCodeOrCity%22:%20%2285298%22%7D&extensions=%7B%22persistedQuery%22:%20%7B%22version%22:%201,%20%22sha256Hash%22:%20%2232e9f9493e3a218eb17a48fc6c68fea0bec636ae3b5e188dee94ef9879cf405d%22%7D,%20%22pwa%22:%20%7B%22salesLine%22:%20%22Media%22,%20%22country%22:%20%22DE%22,%20%22language%22:%20%22de%22,%20%22globalLoyaltyProgram%22:%20true,%20%22fifaUserCreation%22:%20true%7D%7D",
@@ -89,7 +87,3 @@ class TestClient(unittest.TestCase):
     mm = client.Provider('MM')
     search = client.BranchSearch(mm, "85298", limit=10)
     self.assertEqual(len(search.fetch_branches()), 10)
-
-# Run the tests
-if __name__ == '__main__':
-  unittest.main()

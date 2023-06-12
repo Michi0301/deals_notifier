@@ -8,9 +8,11 @@ import requests
 import uuid
 
 PROVIDERS = {
-    "MM": "https://www.mediamarkt.de",
-    "SAT": "https://www.saturn.de"
+    "MM": "http://www.mediamarkt.de",
+    "SAT": "http://www.saturn.de"
 }
+
+PROXIES = {"http": "socks5h://172.17.0.1:1080"}
 
 DEALS_API_PATH = "/de/data/fundgrube/api/postings"
 DEALS_WEB_PATH = "/de/data/fundgrube"
@@ -82,16 +84,17 @@ class BranchSearch:
 
         session = requests.Session()
         session.headers = headers
-        session.mount('https://', HTTPAdapter(max_retries=Retry(total=0)))
+        session.mount('http://', HTTPAdapter(max_retries=Retry(total=3)))
+        session.proxies = PROXIES
 
-        print(f"Requesting: {self.build_url()}")
+        # print(f"Requesting: {self.build_url()}")
 
         response = session.get(self.build_url(), headers=headers)
 
-        print("Response Code:")
-        print(response.status_code)
-        print("Response:")
-        print(response.text)
+        # print("Response Code:")
+        # print(response.status_code)
+        # print("Response:")
+        # print(response.text)
 
 
         if response.status_code == 200:
@@ -196,16 +199,17 @@ class DealSearch:
 
         session = requests.Session()
         session.headers = headers
-        session.mount('https://', HTTPAdapter(max_retries=Retry(total=3)))
+        session.mount('http://', HTTPAdapter(max_retries=Retry(total=3)))
+        session.proxies = PROXIES
 
-        print(f"Requesting: {self.build_url()}")
+        # print(f"Requesting: {self.build_url()}")
 
         response = session.get(self.build_url(), headers=headers)
 
-        print("Response Code:")
-        print(response.status_code)
-        print("Response:")
-        print(response.text)
+        # print("Response Code:")
+        # print(response.status_code)
+        # print("Response:")
+        # print(response.text)
 
         if response.status_code == 200:
             return response.json()

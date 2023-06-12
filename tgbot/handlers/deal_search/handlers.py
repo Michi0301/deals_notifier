@@ -34,7 +34,7 @@ def command_product_select(update: Update, context: CallbackContext) -> None:
 
 # Search offers for a given product, offer keyboard to create search request
 def command_search_offers_for_product_id(update: Update, context: CallbackContext) -> None:
-    provider = client.Provider(provider().identifier)
+    c_provider = client.Provider(provider().identifier)
     
     pim_id, search_type = extract_callback_data(update, f"{PRODUCT_SEARCH}:(.*):(.*)")
 
@@ -44,7 +44,7 @@ def command_search_offers_for_product_id(update: Update, context: CallbackContex
         query_params["outletIds"] = ','.join(map(lambda x: str(x), user.branch_set.values_list('branch_id', flat=True)))        
 
     query = client.DealsQuery(query_params)
-    search = client.DealSearch(provider, query)
+    search = client.DealSearch(c_provider, query)
 
     cheapest_products = search.cheapest(5)
 

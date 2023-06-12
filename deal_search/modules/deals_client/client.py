@@ -12,7 +12,7 @@ PROVIDERS = {
     "SAT": "http://www.saturn.de"
 }
 
-PROXIES = {"http": "socks5h://172.17.0.1:1080"}
+PROXIES = {"http": "socks5://172.17.0.1:1080"}
 
 DEALS_API_PATH = "/de/data/fundgrube/api/postings"
 DEALS_WEB_PATH = "/de/data/fundgrube"

@@ -80,7 +80,7 @@ class IndexedPosting(models.Model):
     notification = models.ForeignKey(Notification, on_delete=models.CASCADE)
     posting_id = models.CharField(max_length=255)
 
-class Posting(models.Model):
+class Posting(models.Model): 
     provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     description = models.TextField()

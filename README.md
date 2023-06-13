@@ -259,8 +259,8 @@ dokku logs dtb -t
 
 ----
 
-## Custom modifiactions
-A wireguard VPN is used to proxy calls to protected apis.
+## Custom changes
+A wireguard VPN can be used to proxy calls to protected apis.
 The proxy is accessible via `socks5://172.17.0.1:1080`.
 
 Prerequisites:

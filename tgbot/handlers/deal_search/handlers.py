@@ -41,7 +41,8 @@ def command_search_offers_for_product_id(update: Update, context: CallbackContex
     query_params = {"text": pim_id}
     if search_type == "LOCAL":
         user = User.get_user(update, context)
-        query_params["outletIds"] = ','.join(map(lambda x: str(x), user.branch_set.values_list('branch_id', flat=True)))        
+        branch_ids = [str(branch_selection.branch.branch_id) for branch_selection in BranchSelection.objects.filter(user=user).select_related('branch')]
+        query_params["outletIds"] = ','.join(branch_ids)        
 
     query = client.DealsQuery(query_params)
     search = client.DealSearch(c_provider, query)

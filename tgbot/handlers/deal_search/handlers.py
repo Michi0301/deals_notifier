@@ -73,7 +73,7 @@ def command_create_notification(update: Update, context: CallbackContext) -> Non
     provider_instance = client.Provider(provider().identifier) 
     name = client.DealSearch.fetch_product_name(provider_instance, pim_id)
 
-    if not user.branch_set.exists():
+    if not BranchSelection.objects.filter(user=user).exists():
         update.effective_message.reply_text(text=static_text.no_branches)
         return      
 

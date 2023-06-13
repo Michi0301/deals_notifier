@@ -130,7 +130,7 @@ def command_add_branch(update: Update, context: CallbackContext):
     branch_id, branch_name = extract_callback_data(update, f"{ADD_BRANCH}:(.*):(.*)")
 
     branch, _ = Branch.objects.get_or_create(provider=provider(), branch_id=branch_id, name=branch_name)
-    BranchSelection.objects.create(user=user, branch=branch)
+    BranchSelection.objects.get_or_create(user=user, branch=branch)
     update.effective_message.edit_reply_markup(reply_markup=make_keyboard_for_branch_delete(branch_id))
 
 def command_list_branches(update: Update, context: CallbackContext):

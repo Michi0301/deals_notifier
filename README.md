@@ -257,5 +257,21 @@ After that you can open admin panel of your deployed app which is located at htt
 dokku logs dtb -t
 ```
 
-
 ----
+
+## Custom modifiactions
+A wireguard VPN is used to proxy calls to protected apis.
+The proxy is accessible via `socks5://172.17.0.1:1080`.
+
+Prerequisites:
+- Place a wireguard config file in `/etc/wireguard/` on the host machine.
+
+Docker command:
+
+```bash
+docker run -d --restart=always --cap-add=NET_ADMIN \
+    --name wireguard-socks-proxy \
+    --volume /etc/wireguard/:/etc/wireguard/:ro \
+    -p 1080:1080 \
+    kizzx2/wireguard-socks-proxy
+```

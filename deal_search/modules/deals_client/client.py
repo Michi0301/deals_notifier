@@ -6,14 +6,17 @@ import json
 import logging
 import requests
 import uuid
+import os
 
 PROVIDERS = {
     "MM": "https://www.mediamarkt.de",
     "SAT": "https://www.saturn.de"
 }
 
-PROXIES = { "http": "socks5://172.17.0.1:1080",
-            "https": "socks5://172.17.0.1:1080" }
+USE_PROXY = os.getenv("USE_PROXY", 'False').lower() in ('true', '1', 't')
+
+if USE_PROXY:
+    PROXIES = { "https": os.environ['HTTPS_PROXY'] }
 
 DEALS_API_PATH = "/de/data/fundgrube/api/postings"
 DEALS_WEB_PATH = "/de/data/fundgrube"
@@ -86,17 +89,15 @@ class BranchSearch:
         session = requests.Session()
         session.headers = headers
         session.mount('https://', HTTPAdapter(max_retries=Retry(total=3)))
-        session.proxies = PROXIES
+        
+        if USE_PROXY:
+            session.proxies = PROXIES
 
-        # print(f"Requesting: {self.build_url()}")
+        logging.info(f"Requesting: {self.build_url()}")
 
         response = session.get(self.build_url(), headers=headers)
 
-        # print("Response Code:")
-        # print(response.status_code)
-        # print("Response:")
-        # print(response.text)
-
+        logging.info(f"Response Code: {response.status_code}")
 
         if response.status_code == 200:
             closest_stores =  response.json()["data"]["closestStores"]
@@ -201,16 +202,15 @@ class DealSearch:
         session = requests.Session()
         session.headers = headers
         session.mount('https://', HTTPAdapter(max_retries=Retry(total=3)))
-        session.proxies = PROXIES
 
-        # print(f"Requesting: {self.build_url()}")
+        if USE_PROXY:
+            session.proxies = PROXIES
+
+        logging.info(f"Requesting: {self.build_url()}")
 
         response = session.get(self.build_url(), headers=headers)
 
-        # print("Response Code:")
-        # print(response.status_code)
-        # print("Response:")
-        # print(response.text)
+        logging.info(f"Response Code: {response.status_code}")
 
         if response.status_code == 200:
             return response.json()

@@ -36,9 +36,10 @@ class Notification(models.Model):
     
     def _fetch_postings(self):
         provider = client.Provider(self.provider)
-        outlet_ids = ','.join([str(branch_id) for branch_id in self.user.branch_set.values_list('branch_id', flat=True)])
 
-        query_params = {"text": self.product_id, "outletIds": outlet_ids}
+        branch_ids = ','.join([str(branch_selection.branch.branch_id) for branch_selection in BranchSelection.objects.filter(user=self.user).select_related('branch')])
+
+        query_params = {"text": self.product_id, "outletIds": branch_ids}
         query = client.DealsQuery(query_params)
         search = client.DealSearch(provider, query)
         postings = search.postings()

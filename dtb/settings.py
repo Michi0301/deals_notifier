@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django_celery_beat',
     'debug_toolbar',
     'django_extensions',
+    'django_bootstrap5',
 
     # local apps
     'users.apps.UsersConfig',

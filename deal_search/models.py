@@ -71,6 +71,9 @@ class Branch(models.Model):
                 branch_id = branch['id'],
                 zip_code = branch['address']['zipCode']
             )
+        
+    class Meta:
+        ordering = ["zip_code"]
 
 class BranchSelection(models.Model):
     user =  models.ForeignKey(User, on_delete=models.CASCADE)
@@ -93,6 +96,7 @@ class Posting(models.Model):
     shipping_type = models.CharField(max_length=255)
     shipping_cost = models.DecimalField(decimal_places=2,max_digits=6)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    shop_url = models.CharField(max_length=255)
 
     @classmethod
     def sync_remote_by_branch(cls, provider, branch):
@@ -119,7 +123,8 @@ class Posting(models.Model):
                     branch = branch,
                     image_url = c_posting.original_url,
                     shipping_type = c_posting.shipping_type,
-                    shipping_cost = c_posting.shipping_cost
+                    shipping_cost = c_posting.shipping_cost,
+                    shop_url = c_posting.fundgrube_url()
                 )
 
                 created_count += 1

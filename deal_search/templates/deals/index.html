@@ -1,0 +1,41 @@
+{% load django_bootstrap5 %}
+
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+
+{% for branch in branches %}
+  <div class="accordion" id="branch-{{branch.branch_id}}">
+    <div class="accordion-item">
+      <h2 class="accordion-header">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#postings-branch-{{branch.branch_id}}" aria-expanded="true" aria-controls="panelsStayOpen-collapseOne">
+          <span class="badge bg-primary rounded-pill">{{ branch.posting_set.count }}</span> {{ branch.zip_code }} - {{ branch.name }} 
+        </button>
+      </h2>
+      <div id="postings-branch-{{branch.branch_id}}" class="accordion-collapse collapse">
+        <div class="accordion-body">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Price</th>
+                <th scope="col">Shipping</th>
+                <th scope="col">Shipping Cost</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for posting in branch.posting_set.all %}
+                <tr>
+                  <th scope="row"><a href={{posting.shop_url}} target="_blank">{{ posting.name|truncatechars:120 }}</a></th>
+                  <td>{{ posting.price }} €</td>
+                  <td>{{ posting.shipping_type }}</td>
+                  <td>{{ posting.shipping_cost }}</td>
+                </tr>
+              {% endfor %}
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endfor %}

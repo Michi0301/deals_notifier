@@ -2,6 +2,7 @@ pytz
 requests[socks]
 responses
 python-dotenv
+django-bootstrap5
 
 ipython==8.5.0  # enhanced python interpreter
 

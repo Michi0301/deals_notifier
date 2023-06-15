@@ -98,6 +98,9 @@ class Posting(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     shop_url = models.CharField(max_length=255)
 
+    class Meta:
+        ordering = ["price"]
+
     @classmethod
     def sync_remote_by_branch(cls, provider, branch):
         c_provider = client.Provider(provider.identifier)

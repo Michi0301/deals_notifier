@@ -1,4 +1,5 @@
 pytz
+pysocks
 requests[socks]
 responses
 python-dotenv
